@@ -9,12 +9,15 @@ int jumlahFilm = 0;
 
 // Fungsi untuk memeriksa apakah ID sudah ada
 bool isIdExists(int id_film) {
-    for (int i = 0; i < jumlahFilm; i++) { // looping berdasarkan jumlah film saat ini
+    bool ada = false; // flag
+    int i = 0; // index
+    while (i < jumlahFilm && !ada) { // looping berdasarkan jumlah film saat ini, berhenti jika sudah ketemu
         if (daftarFilm[i]->getId() == id_film) { // jika id nya terdapat kesamaan
-            return true; // mengembalikan nilai true
+            ada = true; // id sudah ada
         }
+        i++; // lanjut ke elemen berikutnya
     }
-    return false; // jika tidak ditemukan id yang sama maka false
+    return ada; // true jika id sudah ada, false jika tidak ditemukan id yang sama
 }
 
 // prosedur untuk menampilkan menu yang bisa diakses
@@ -37,19 +40,21 @@ void tambahData() {
 
     cout << "\n--- Tambahkan Data Film ---\n";
     string inputStr;
-    int id_film;
+    int id_film = 0;
+    bool idValid = false; // flag validasi ID
     
     // Validasi ID unik dan integer
-    while (true) {
+    while (!idValid) {
         try {
             cout << "ID Film: ";
             getline(cin, inputStr);
             id_film = stoi(inputStr); // konversi input ke integer
             
             if (!isIdExists(id_film)) { // jika id unik
-                break;
+                idValid = true;
+            } else {
+                cout << "ID ini sudah ada. Silakan masukkan ID lain.\n";
             }
-            cout << "ID ini sudah ada. Silakan masukkan ID lain.\n";
         } catch (const invalid_argument&) {
             cout << "Input tidak valid. Masukkan angka.\n";
         }
@@ -62,35 +67,37 @@ void tambahData() {
     cout << "Genre Film: ";
     getline(cin, genre);
 
-    int durasi;
+    int durasi = 0;
+    bool durasiValid = false; // flag validasi durasi
     // Validasi input numerik untuk durasi
-    while (true) {
+    while (!durasiValid) {
         try {
             cout << "Durasi (menit): ";
             getline(cin, inputStr);
             durasi = stoi(inputStr);
             if (durasi < 0) { // jika input negatif
                 cout << "Input tidak valid. Durasi tidak boleh negatif.\n";
-                continue;
+            } else {
+                durasiValid = true;
             }
-            break;
         } catch (const invalid_argument&) {
             cout << "Input tidak valid. Masukkan angka.\n";
         }
     }
 
-    int harga;
+    int harga = 0;
+    bool hargaValid = false; // flag validasi harga
     // Validasi input numerik untuk harga
-    while (true) {
+    while (!hargaValid) {
         try {
             cout << "Harga Tiket (Rp): ";
             getline(cin, inputStr);
             harga = stoi(inputStr);
             if (harga <= 0) { // jika input tidak valid
                 cout << "Input tidak valid. Harga harus lebih dari 0.\n";
-                continue;
+            } else {
+                hargaValid = true;
             }
-            break;
         } catch (const invalid_argument&) {
             cout << "Input tidak valid. Masukkan angka.\n";
         }
@@ -131,9 +138,12 @@ void updateData() {
         return;
     }
     
-    // looping untuk semua data didalam array
-    for (int i = 0; i < jumlahFilm; i++) {
+    bool found = false; // flag
+    int i = 0; // index
+    // looping untuk semua data didalam array, berhenti jika sudah ketemu
+    while (i < jumlahFilm && !found) {
         if (daftarFilm[i]->getId() == id_update) { // jika id yang dicari cocok
+            found = true;
             
             // update ID film
             cout << "ID Film baru (" << daftarFilm[i]->getId() << "): ";
@@ -198,11 +208,13 @@ void updateData() {
             }
 
             cout << "\nData film berhasil diupdate\n";
-            return;
         }
+        i++; // lanjut ke elemen berikutnya
     }
     // jika tidak ditemukan id tujuan
-    cout << "Film dengan ID " << id_update << " tidak ditemukan\n";
+    if (!found) {
+        cout << "Film dengan ID " << id_update << " tidak ditemukan\n";
+    }
 }
 
 // prosedur untuk menghapus data
@@ -220,9 +232,12 @@ void hapusData() {
         return;
     }
 
-    // looping untuk semua elemen dalam array
-    for (int i = 0; i < jumlahFilm; i++) {
+    bool found = false; // flag
+    int i = 0; // index
+    // looping untuk semua elemen dalam array, berhenti jika sudah ketemu
+    while (i < jumlahFilm && !found) {
         if (daftarFilm[i]->getId() == id_hapus) { // jika id ditemukan
+            found = true;
             delete daftarFilm[i]; // hapus objek dari memori
             
             // geser elemen array ke kiri untuk menutup celah
@@ -232,10 +247,12 @@ void hapusData() {
             
             jumlahFilm--; // kurangi counter
             cout << "\nData film berhasil dihapus\n";
-            return;
         }
+        i++; // lanjut ke elemen berikutnya
     }
-    cout << "Film dengan ID " << id_hapus << " tidak ditemukan\n";
+    if (!found) {
+        cout << "Film dengan ID " << id_hapus << " tidak ditemukan\n";
+    }
 }
 
 // prosedur untuk mencari data
@@ -253,21 +270,26 @@ void cariData() {
         return;
     }
 
-    // looping untuk semua elemen dalam array
-    for (int i = 0; i < jumlahFilm; i++) {
+    bool found = false; // flag
+    int i = 0; // index
+    // looping untuk semua elemen dalam array, berhenti jika sudah ketemu
+    while (i < jumlahFilm && !found) {
         if (daftarFilm[i]->getId() == id_cari) { // jika id ditemukan
+            found = true;
             cout << "\nData film ditemukan:\n";
             daftarFilm[i]->tampilkanData(); // menampilkan data
-            return;
         }
+        i++; // lanjut ke elemen berikutnya
     }
-    cout << "Film dengan ID " << id_cari << " tidak ditemukan\n";
+    if (!found) {
+        cout << "Film dengan ID " << id_cari << " tidak ditemukan\n";
+    }
 }
 
 int main() {
-    string pilihan;
+    string pilihan = "";
     
-    while (true) {
+    while (pilihan != "6") { // berhenti jika user memilih 6 (Keluar)
         tampilkanMenu(); // menampilkan menu
         cout << "Pilihan: ";
         getline(cin, pilihan); // input opsi
@@ -288,7 +310,6 @@ int main() {
             for (int i = 0; i < jumlahFilm; i++) {
                 delete daftarFilm[i];
             }
-            break;
         } else {
             cout << "Pilihan tidak valid. Coba lagi\n";
         }
