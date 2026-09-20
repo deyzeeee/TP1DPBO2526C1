@@ -9,12 +9,15 @@ public class Main {
 
     // fungsi untuk menentukan id unik
     private static boolean isIdExists(int id_film) {
-        for (Film film : daftarFilm) { // looping ke semua elemen
-            if (film.getId() == id_film) { // jika elemen ada yang sama
-                return true; // mengembalikan nilai true
+        boolean ada = false; // flag
+        int i = 0; // index
+        while (i < daftarFilm.size() && !ada) { // looping ke semua elemen, berhenti jika sudah ketemu
+            if (daftarFilm.get(i).getId() == id_film) { // jika elemen ada yang sama
+                ada = true; // id sudah ada
             }
+            i++; // lanjut ke elemen berikutnya
         }
-        return false; // jika elemen itu unik mengembalikan nilai false
+        return ada; // true jika id sudah ada, false jika elemen itu unik
     }
 
     // prosedur menampilkan menu
@@ -32,16 +35,18 @@ public class Main {
     // prosedur menambahkan data
     private static void tambahData() {
         System.out.println("\n--- Tambahkan Data Film ---");
-        int id_film;
+        int id_film = 0;
+        boolean idValid = false; // flag validasi ID
         // Validasi ID unik dan integer
-        while (true) {
+        while (!idValid) {
             try {
                 System.out.print("ID Film: ");
                 id_film = Integer.parseInt(scanner.nextLine()); // input
                 if (!isIdExists(id_film)) { // jika id unik
-                    break;
+                    idValid = true;
+                } else {
+                    System.out.println("ID ini sudah ada. Silakan masukkan ID lain."); // jika id tidak unik
                 }
-                System.out.println("ID ini sudah ada. Silakan masukkan ID lain."); // jika id tidak unik
             } catch (NumberFormatException e) {
                 System.out.println("Input tidak valid. Masukkan angka.");
             }
@@ -53,33 +58,35 @@ public class Main {
         System.out.print("Genre Film: ");
         String genre = scanner.nextLine(); // input
 
-        int durasi;
+        int durasi = 0;
+        boolean durasiValid = false; // flag validasi durasi
         // Validasi input numerik untuk durasi
-        while (true) {
+        while (!durasiValid) {
             try {
                 System.out.print("Durasi (menit): ");
                 durasi = Integer.parseInt(scanner.nextLine());
                 if (durasi < 0) { // jika input negatif
                     System.out.println("Input tidak valid. Durasi tidak boleh negatif.");
-                    continue; // kembali ke awal loop
+                } else {
+                    durasiValid = true;
                 }
-                break;
             } catch (NumberFormatException e) { // jika input bukan angka
                 System.out.println("Input tidak valid. Masukkan angka.");
             }
         }
 
-        int harga;
+        int harga = 0;
+        boolean hargaValid = false; // flag validasi harga
         // Validasi input numerik untuk harga
-        while (true) {
+        while (!hargaValid) {
             try {
                 System.out.print("Harga Tiket (Rp): ");
                 harga = Integer.parseInt(scanner.nextLine());
                 if (harga <= 0) { // jika input kurang dari atau sama dengan nol
                     System.out.println("Input tidak valid. Harga harus lebih dari 0.");
-                    continue; // kembali ke awal loop
+                } else {
+                    hargaValid = true;
                 }
-                break;
             } catch (NumberFormatException e) { // jika input bukan angka
                 System.out.println("Input tidak valid. Masukkan angka.");
             }
@@ -117,7 +124,9 @@ public class Main {
         }
         
         boolean found = false; // flag
-        for (Film film : daftarFilm) { // looping ke semua elemen film
+        int i = 0; // index
+        while (i < daftarFilm.size() && !found) { // looping ke semua elemen film, berhenti jika sudah ketemu
+            Film film = daftarFilm.get(i);
             if (film.getId() == id_update) { // jika film ditemukan
                 found = true;
 
@@ -185,8 +194,8 @@ public class Main {
                 }
 
                 System.out.println("\nData film berhasil diupdate");
-                break;
             }
+            i++; // lanjut ke elemen berikutnya
         }
 
         if (!found) { // jika id tidak ditemukan
@@ -207,13 +216,14 @@ public class Main {
         }
 
         boolean found = false; // flag
-        for (int i = 0; i < daftarFilm.size(); i++) { // looping ke semua elemen
+        int i = 0; // index
+        while (i < daftarFilm.size() && !found) { // looping ke semua elemen, berhenti jika sudah ketemu
             if (daftarFilm.get(i).getId() == id_hapus) { // jika ditemukan id yang dicari
                 daftarFilm.remove(i); // hapus data
                 found = true; // flag true
                 System.out.println("\nData film berhasil dihapus");
-                break;
             }
+            i++; // lanjut ke elemen berikutnya
         }
 
         if (!found) { // jika tidak ditemukan
@@ -234,13 +244,15 @@ public class Main {
         }
 
         boolean found = false; // flag
-        for (Film film : daftarFilm) { // looping ke semua elemen
+        int i = 0; // index
+        while (i < daftarFilm.size() && !found) { // looping ke semua elemen, berhenti jika sudah ketemu
+            Film film = daftarFilm.get(i);
             if (film.getId() == id_cari) { // jika ditemukan id yang dicari
                 System.out.println("\nData film ditemukan:");
                 film.tampilkanData(); // menampilkan data
                 found = true;
-                break;
             }
+            i++; // lanjut ke elemen berikutnya
         }
 
         if (!found) { // jika tidak ditemukan
@@ -250,10 +262,11 @@ public class Main {
 
     // main program
     public static void main(String[] args) {
-        while (true) {
+        String pilihan = "";
+        while (!pilihan.equals("6")) { // berhenti jika user memilih 6 (Keluar)
             tampilkanMenu(); // menampilkan menu
             System.out.print("Pilihan: ");
-            String pilihan = scanner.nextLine(); // input opsi
+            pilihan = scanner.nextLine(); // input opsi
 
             if (pilihan.equals("1")) { // opsi 1
                 tambahData(); // menambah data
@@ -267,7 +280,6 @@ public class Main {
                 cariData(); // mencari data
             } else if (pilihan.equals("6")) { // opsi 6
                 System.out.println("Terima kasih telah menggunakan program ini");
-                break;
             } else {
                 System.out.println("Pilihan tidak valid. Coba lagi");
             }
