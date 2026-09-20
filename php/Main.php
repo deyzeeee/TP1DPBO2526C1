@@ -20,14 +20,18 @@ $message_type = '';
 
 // helper cek ID
 function isIdExists($id_film, $list) {
-    foreach ($list as $item) // looping
+    $ada = false; // flag
+    $i = 0; // index
+    $total = count($list); // jumlah elemen
+    while ($i < $total && !$ada) // looping, berhenti jika sudah ketemu
     {
-        if ($item->getId() === $id_film) // jika id ditemukan / tidak unik
+        if ($list[$i]->getId() === $id_film) // jika id ditemukan / tidak unik
         {
-            return true;
+            $ada = true;
         }
+        $i++; // lanjut ke elemen berikutnya
     }
-    return false; // jika id unik
+    return $ada; // true jika id sudah ada, false jika id unik
 }
 
 // Tambah film
@@ -83,10 +87,15 @@ if (isset($_GET['action']) && $_GET['action'] === 'hapus' && isset($_GET['id']))
 // function untuk update film
 function updateFilm($id_update) {
     global $message, $message_type;
-    foreach ($_SESSION['daftarFilm'] as $film) // looping ke semua elemen
+    $found = false; // flag
+    $i = 0; // index
+    $total = count($_SESSION['daftarFilm']); // jumlah film saat ini
+    while ($i < $total && !$found) // looping ke semua elemen, berhenti jika sudah ketemu
     {
+        $film = $_SESSION['daftarFilm'][$i];
         if ($film->getId() === (int)$id_update) // jika id ditemukan
         {
+            $found = true;
             $id_baru = trim($_POST['id_baru']);
             $judul_baru = trim($_POST['judul']);
             $genre_baru = trim($_POST['genre']);
@@ -97,57 +106,58 @@ function updateFilm($id_update) {
             if (empty($judul_baru) || empty($genre_baru) || !is_numeric($durasi_baru) || !is_numeric($harga_baru) || $durasi_baru < 0 || $harga_baru <= 0) {
                 $message = "❌ Input tidak valid. Pastikan form terisi dengan benar.";
                 $message_type = 'error';
-                return [$message, $message_type];
-            }
-
-            // update ID film
-            if (!empty($id_baru) && (int)$id_baru !== $film->getId())
-            {
-                if (isIdExists((int)$id_baru, $_SESSION['daftarFilm'])) // jika input tidak valid
+            } else {
+                // update ID film
+                if (!empty($id_baru) && (int)$id_baru !== $film->getId())
                 {
-                    // error
-                    $message = "⚠️ ID baru sudah digunakan, ID tidak diubah.";
-                    $message_type = 'warning';
-                } else {
-                    $film->setId((int)$id_baru); // jika input valid
+                    if (isIdExists((int)$id_baru, $_SESSION['daftarFilm'])) // jika input tidak valid
+                    {
+                        // error
+                        $message = "⚠️ ID baru sudah digunakan, ID tidak diubah.";
+                        $message_type = 'warning';
+                    } else {
+                        $film->setId((int)$id_baru); // jika input valid
+                    }
+                }
+
+                // update judul
+                $film->setJudul($judul_baru);
+            
+                // update genre
+                $film->setGenre($genre_baru);
+
+                // update durasi
+                $film->setDurasi((int)$durasi_baru);
+
+                // update harga
+                $film->setHarga((int)$harga_baru);
+
+                // update poster jika ada upload baru
+                if (!empty($_FILES['poster']['name']) && $_FILES['poster']['error'] == 0) {
+                    $target_dir = "./images/"; // folder yang dituju
+                    if (!is_dir($target_dir)) mkdir($target_dir); // cek apakah folder sudah ada, jika belum maka buat folder
+                    $target_file = $target_dir . time() . "_" . basename($_FILES["poster"]["name"]);
+                    if (move_uploaded_file($_FILES["poster"]["tmp_name"], $target_file))
+                    {
+                        $film->setPoster($target_file); // update path gambar
+                    }
+                }
+            
+                // hanya tampilkan pesan sukses kalau tidak ada warning
+                if ($message_type !== 'warning') {
+                    $message = "✏️ Data film berhasil diupdate!";
+                    $message_type = 'success';
                 }
             }
-
-            // update judul
-            $film->setJudul($judul_baru);
-            
-            // update genre
-            $film->setGenre($genre_baru);
-
-            // update durasi
-            $film->setDurasi((int)$durasi_baru);
-
-            // update harga
-            $film->setHarga((int)$harga_baru);
-
-            // update poster jika ada upload baru
-            if (!empty($_FILES['poster']['name']) && $_FILES['poster']['error'] == 0) {
-                $target_dir = "./images/"; // folder yang dituju
-                if (!is_dir($target_dir)) mkdir($target_dir); // cek apakah folder sudah ada, jika belum maka buat folder
-                $target_file = $target_dir . time() . "_" . basename($_FILES["poster"]["name"]);
-                if (move_uploaded_file($_FILES["poster"]["tmp_name"], $target_file))
-                {
-                    $film->setPoster($target_file); // update path gambar
-                }
-            }
-            
-            // hanya tampilkan pesan sukses kalau tidak ada warning
-            if ($message_type !== 'warning') {
-                $message = "✏️ Data film berhasil diupdate!";
-                $message_type = 'success';
-            }
-
-            return [$message, $message_type]; // langsung keluar dari fungsi
         }
+        $i++; // lanjut ke elemen berikutnya
     }
-    $message = "Film tidak ditemukan.";
-    $message_type = 'error';
-    return [$message, $message_type]; // kalau tidak ketemu film
+
+    if (!$found) { // kalau tidak ketemu film
+        $message = "Film tidak ditemukan.";
+        $message_type = 'error';
+    }
+    return [$message, $message_type];
 }
 
 // eksekusi update
@@ -169,14 +179,18 @@ if (isset($_GET['cari'])) // cek apakah null atau tidak
 
 // Fungsi untuk ambil film berdasarkan ID
 function getFilmById($id) {
-    foreach ($_SESSION['daftarFilm'] as $film) // looping ke semua elemen
+    $hasil = null; // default kalau tidak ketemu
+    $i = 0; // index
+    $total = count($_SESSION['daftarFilm']); // jumlah film saat ini
+    while ($i < $total && $hasil === null) // looping ke semua elemen, berhenti jika sudah ketemu
     {
-        if ($film->getId() === (int)$id) // jika id film ditemukan
+        if ($_SESSION['daftarFilm'][$i]->getId() === (int)$id) // jika id film ditemukan
         {
-            return $film; // langsung kembalikan objek film
+            $hasil = $_SESSION['daftarFilm'][$i]; // simpan objek film
         }
+        $i++; // lanjut ke elemen berikutnya
     }
-    return null; // kalau tidak ketemu
+    return $hasil; // objek film, atau null kalau tidak ketemu
 }
 
 $edit_id = $edit_judul = $edit_genre = $edit_durasi = $edit_harga = $edit_poster = ''; // default
