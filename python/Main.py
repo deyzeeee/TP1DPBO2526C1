@@ -4,10 +4,13 @@ daftarFilm = [] # deklarasi list kosong untuk menampung data film
 
 # fungsi untuk menentukan id unik
 def isIdExists(id_film):
-    for film in daftarFilm: # looping ke semua elemen
-        if film.getId() == id_film: # jika elemen ada yang sama
-            return True # mengembalikan nilai true
-    return False # jika elemen itu unik mengembalikan nilai false
+    ada = False # flag
+    i = 0 # index
+    while i < len(daftarFilm) and not ada: # looping ke semua elemen, berhenti jika sudah ketemu
+        if daftarFilm[i].getId() == id_film: # jika elemen ada yang sama
+            ada = True # id sudah ada
+        i += 1 # lanjut ke elemen berikutnya
+    return ada # True jika id sudah ada, False jika elemen itu unik
 
 # prosedur menampilkan menu
 def tampilkanMenu():
@@ -23,38 +26,45 @@ def tampilkanMenu():
 # prosedur menambahkan data
 def tambahData():
     print("\n--- Tambahkan Data Film ---")
+    id_film = 0
+    id_valid = False # flag validasi ID
     # Validasi ID unik dan integer
-    while True:
+    while not id_valid:
         try:
             id_film = int(input("ID Film: ")) # input
             if not isIdExists(id_film): # jika id unik
-                break
-            print("ID ini sudah ada. Silakan masukkan ID lain.") # jika id tidak unik
+                id_valid = True
+            else:
+                print("ID ini sudah ada. Silakan masukkan ID lain.") # jika id tidak unik
         except ValueError:
             print("Input tidak valid. Masukkan angka.")
     
     judul = input("Judul Film: ") # input
     genre = input("Genre Film: ") # input
 
+    durasi = 0
+    durasi_valid = False # flag validasi durasi
     # Validasi input numerik untuk durasi
-    while True:
+    while not durasi_valid:
         try:
             durasi = int(input("Durasi (menit): "))
             if durasi < 0: # jika input negatif
                 print("Input tidak valid. Durasi tidak boleh negatif.")
-                continue # kembali ke awal loop
-            break
+            else:
+                durasi_valid = True
         except ValueError: # jika input bukan angka
             print("Input tidak valid. Masukkan angka.")
             
+    harga = 0
+    harga_valid = False # flag validasi harga
     # Validasi input numerik untuk harga
-    while True:
+    while not harga_valid:
         try:
             harga = int(input("Harga Tiket (Rp): "))
             if harga <= 0: # jika input kurang dari atau sama dengan nol
                 print("Input tidak valid. Harga harus lebih dari 0.")
-                continue # kembali ke awal loop
-            break
+            else:
+                harga_valid = True
         except ValueError: # jika input bukan angka
             print("Input tidak valid. Masukkan angka.")
 
@@ -83,7 +93,9 @@ def updateData():
         return
 
     found = False # flag
-    for film in daftarFilm: # looping ke semua elemen film
+    i = 0 # index
+    while i < len(daftarFilm) and not found: # looping ke semua elemen film, berhenti jika sudah ketemu
+        film = daftarFilm[i]
         if film.getId() == id_update: # jika film ditemukan
             found = True
 
@@ -139,7 +151,7 @@ def updateData():
                     print("Input harga tidak valid. Data tidak diubah.")
 
             print("\nData film berhasil diupdate")
-            break
+        i += 1 # lanjut ke elemen berikutnya
 
     if not found: # jika id tidak ditemukan
         print(f"Film dengan ID {id_update} tidak ditemukan")
@@ -154,12 +166,13 @@ def hapusData():
         return
 
     found = False # flag
-    for film in daftarFilm: # looping ke semua elemen
-        if film.getId() == id_hapus: # jika ditemukan id yang dicari
-            daftarFilm.remove(film) # hapus data
+    i = 0 # index
+    while i < len(daftarFilm) and not found: # looping ke semua elemen, berhenti jika sudah ketemu
+        if daftarFilm[i].getId() == id_hapus: # jika ditemukan id yang dicari
+            daftarFilm.pop(i) # hapus data
             found = True # flag true
             print("\nData film berhasil dihapus")
-            break
+        i += 1 # lanjut ke elemen berikutnya
 
     if not found: # jika tidak ditemukan
         print(f"Film dengan ID {id_hapus} tidak ditemukan")
@@ -174,19 +187,22 @@ def cariData():
         return
 
     found = False # flag
-    for film in daftarFilm: # looping ke semua elemen
+    i = 0 # index
+    while i < len(daftarFilm) and not found: # looping ke semua elemen, berhenti jika sudah ketemu
+        film = daftarFilm[i]
         if film.getId() == id_cari: # jika ditemukan id yang dicari
             print("\nData film ditemukan:")
             film.tampilkanData() # menampilkan data
             found = True
-            break
+        i += 1 # lanjut ke elemen berikutnya
 
     if not found: # jika tidak ditemukan
         print(f"Film dengan ID {id_cari} tidak ditemukan")
 
 # main program
 def main():
-    while True:
+    pilihan = ""
+    while pilihan != '6': # berhenti jika user memilih 6 (Keluar)
         tampilkanMenu() # menampilkan menu
         pilihan = input("Pilihan: ") # input opsi
 
@@ -202,7 +218,6 @@ def main():
             cariData() # mencari data
         elif pilihan == '6': # opsi 6
             print("Terima kasih telah menggunakan program ini")
-            break
         else:
             print("Pilihan tidak valid. Coba lagi")
 
