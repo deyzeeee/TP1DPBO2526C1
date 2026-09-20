@@ -2,8 +2,9 @@
 Saya Muhammad Fadey Rafif dengan NIM 2504792 mengerjakan Tugas Praktikum 1 dalam mata kuliah Desain dan Pemrograman Berorientasi Objek untuk keberkahanNya maka saya tidak melakukan kecurangan seperti yang telah dispesifikasikan. Aamiin.
 
 # STRUKTUR FILE
+
 ```
-TP1DPBO2627C1/
+TP1DPBO2526C1/
 ├── c++/
 │   ├── Film.cpp
 │   └── Main.cpp
